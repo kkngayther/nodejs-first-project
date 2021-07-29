@@ -57,10 +57,38 @@ class CourseController {
     }
 
     // [DELETE] courses/:id/force
-    forceDelete(req, res, next){
+    forceDelete(req, res, next) {
         Course.deleteOne({ _id: req.params.id })
             .then(() => res.redirect('back'))
             .catch(next);
+    }
+
+    // [POST] courses/handle-multiple-courses
+    handleMultipleCourses(req, res, next) {
+        switch (req.body.action) {
+            case 'delete': {
+                Course.delete({ _id: {$in: req.body.coursesId} })
+                    .then(() => res.redirect('back'))
+                    .catch(next);
+                break;
+            }
+            default:
+                res.json({message: 'Action is invalid !!!'});
+        }
+    }
+
+    // [POST] /courses/handle-restore-multiple-courses
+    handleRestoreMultipleCourses(req, res, next){
+        switch (req.body.action) {
+            case 'restore': {
+                Course.restore({ _id: {$in: req.body.coursesId} })
+                    .then(() => res.redirect('back'))
+                    .catch(next);
+                break;
+            }
+            default:
+                res.json({message: 'Action is invalid !!!'});
+        }
     }
 }
 

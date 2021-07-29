@@ -1,13 +1,30 @@
-<div class="mt-4">
+<form class="mt-4" method="POST" action="/courses/handle-restore-multiple-courses">
   <h2>Thùng rác</h2>
   <a href="/me/stored/courses">Danh sách khóa học</a>
+  <div class="my-4 d-flex align-items-center">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="check-all" />
+      <label class="form-check-label" for="check-all">
+        Chọn tất cả
+      </label>
+    </div>
+    <div class="form-group mx-4 my-0">
+      <select class="form-control" name="action" required>
+        <option value="">-- Hành động --</option>
+        <option value="restore">Khôi phục</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary handle-check-box-btn" disabled>Thực hiện</button>
+  </div>
   <table class="table">
     <thead>
       <tr>
+        <th></th>
         <th scope="col">#</th>
         <th scope="col">Tên khóa học</th>
         <th scope="col">Thời gian tạo</th>
-        <th scope="col">Thời gian cập nhật</th>
+        <th scope="col">Thời gian xóa</th>
         <th></th>
         <th></th>
       </tr>
@@ -15,10 +32,20 @@
     <tbody>
       {{#each courses}}
         <tr>
+          <td>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="coursesId[]"
+                value="{{this._id}}"
+              />
+            </div>
+          </td>
           <th scope="row">{{sum @index 1}}</th>
           <td>{{this.name}}</td>
           <td>{{this.createdAt}}</td>
-          <td>{{this.updatedAt}}</td>
+          <td>{{this.deletedAt}}</td>
           <td>
             <a class="restore-button" href="" data-id="{{this._id}}">Khôi phục</a>
           </td>
@@ -38,7 +65,7 @@
       {{/each}}
     </tbody>
   </table>
-</div>
+</form>
 
 <form id="delete-form" method="POST"></form>
 <form id="restore-form" method="POST"></form>
@@ -83,6 +110,10 @@
     var btnRestoreCourse = $('.restore-button'); 
     var deleteForm = document.getElementById('delete-form');
     var restoreForm = document.getElementById('restore-form');
+    var checkAll = $('#check-all');
+    var checkListItems = $('input[name="coursesId[]"]');
+    var handleCheckBoxBtn = $('.handle-check-box-btn');
+    var containerForm = $('.container-form');
 
     $('#delete-course-modal').on('show.bs.modal', function (event) { 
       var button = $(event.relatedTarget); 
@@ -101,5 +132,27 @@
       restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH'; 
       restoreForm.submit();
     });
+
+    checkAll.change( function(){
+      var isCheckedAll = checkAll.prop('checked');
+      checkListItems.prop('checked', isCheckedAll);
+      enabledHandleCheckBoxBtn()
+    });
+
+    checkListItems.change(function(){
+      var isCheckedAllItem = checkListItems.length === $('input[name="coursesId[]"]:checked').length;
+      checkAll.prop('checked', isCheckedAllItem);
+      enabledHandleCheckBoxBtn()
+    });
+
+    function enabledHandleCheckBoxBtn(){
+      var checkedCount = $('input[name="coursesId[]"]:checked').length;
+      if (checkedCount > 0){
+        handleCheckBoxBtn.attr('disabled', false);
+      }
+      else {
+        handleCheckBoxBtn.attr('disabled', true);
+      }
+    };
   })
 </script>
